@@ -1,0 +1,24 @@
+{
+  "name": "employee-tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "dependencies": {
+    "inquirer": "^8.2.0",
+    "mysql2": "^2.3.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QuentinHnilica/employee-tracker.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/QuentinHnilica/employee-tracker/issues"
+  },
+  "homepage": "https://github.com/QuentinHnilica/employee-tracker#readme"
+}
