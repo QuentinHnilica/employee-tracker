@@ -14,11 +14,6 @@ const db = mysql.createConnection({
 //db.execute("database/seeds.sql")
 
 
-
-const inputs = async() => {
-    
-}
-
 function promptUser() {
     // view all departments
     // view all roles
@@ -36,7 +31,7 @@ function promptUser() {
           message: 'What would you like to do?',
           choices: ['View all departments', 'View all roles', 'View all employees',
           'Add a department', 'Add a role', 'add new employee',
-          'Update exsisting employee', 'Quit'
+          'Update employee role', 'Quit'
           ],
         },
       ])
@@ -46,36 +41,29 @@ function promptUser() {
             viewAllRoles()
             break
           case 'View all departments':
-            console.log('View all departments')
             viewDepartments()
             break
           case 'View all employees':
-            console.log('View all employees')
-            promptUser()
+            viewEmployees()
             break
           case 'Add a department':
-            console.log('Add a department')
             addDepartment()
             break
           case 'Add a role':
-            console.log('Add a role')
             addRole()
             break
-          case 'Add a employee':
-            console.log('Add a employee')
-            promptUser()
+          case 'add new employee':
+            addEmployee()
             break
-          case 'Update exsisting employee':
-            console.log('Update exsisting employee')
-            promptUser()
+          case 'Update employee role':
+            updateEmployeeRole()
             break
-        //   default:
-        //     console.log('default')
-        //     console.log('quit')
-        //     process.exit(0)
+          default:
+            console.log('quitting...')
+            process.exit(0)
         }
       })
-  }
+}
 
 const viewDepartments = async () => {
     const depos =  await db.promise().query(
@@ -83,6 +71,89 @@ const viewDepartments = async () => {
     )
     console.table(depos[0])
     promptUser()
+}
+
+const viewAllRoles = async () => {
+  const roles =  await db.promise().query(
+      `SELECT * FROM roles`
+  )
+  const theRoles = roles[0]
+
+  const depos =  await db.promise().query(
+    `SELECT * FROM departments`
+)
+const mydpos = depos[0]
+const roleTable = []
+
+for (let i = 0; i < theRoles.length; i++){
+  let newObj = {}
+  for (let v = 0; v < mydpos.length; v++){
+    if (theRoles[i].department_id === mydpos[v].id){
+      newObj.id = theRoles[i].id
+      newObj.title = theRoles[i].title
+      newObj.salary = theRoles[i].salary
+      newObj.department = mydpos[v].depoName
+      roleTable.push(newObj)
+    }
+  }
+}
+  console.table(roleTable)
+
+  promptUser()
+}
+
+const viewEmployees = async (bool) => {
+  const employees =  await db.promise().query(
+    `SELECT * FROM employees`
+  )
+  const theEmployees = employees[0]
+  
+  if (bool){
+    return theEmployees
+  }
+  else{
+
+  const roles =  await db.promise().query(
+    `SELECT * FROM roles`)
+  const theRoles = roles[0]
+
+  const depos =  await db.promise().query(
+    `SELECT * FROM departments`)
+  const mydpos = depos[0]
+
+  const employeeTable = []
+
+  for (let i = 0; i < theEmployees.length; i++){ //Depos info is messed up
+    let newObj = {}
+    newObj.id = theEmployees[i].id
+    newObj.firstName = theEmployees[i].first_name
+    newObj.lastName = theEmployees[i].last_name
+    for (let q = 0; q < theRoles.length; q++){
+      if (theEmployees[i].role_id == theRoles[q].id)
+      newObj.title = theRoles[q].title
+      for (let z = 0; z < mydpos.length; z++){
+        if (mydpos[z].id == theRoles[q].department_id){
+          newObj.department = mydpos[z].depoName
+        }
+      }
+      newObj.salary = theRoles[q].salary
+    }
+    if (theEmployees[i].manager_id != null){
+      for (let a = 0; a < theEmployees.length; a++){
+        if (theEmployees[i].manager_id == theEmployees[a].id){
+          newObj.manager = theEmployees[a].first_name + ' ' + theEmployees[a].last_name
+        }
+      }
+    }
+    else{
+      newObj.manager = null
+    }
+    
+    employeeTable.push(newObj)
+  }
+  console.table(employeeTable)
+  promptUser()
+  }
 }
 
 function addDepartment() {
@@ -99,16 +170,17 @@ function addDepartment() {
             VALUES (?)`,
             answer.depo
         )
-          console.log(answer.depo)
           promptUser()
       })
   }
 const addRole = async() => {
     const theDepos = await db.promise().query(
         `SELECT * FROM departments`)
+    const depoVar = theDepos[0]
+    const depoNames = []
 
-        for (let i = 0; i < theDepos[0].length; i++){
-            
+        for (let i = 0; i < depoVar.length; i++){
+            depoNames.push(depoVar[i].depoName)
         }
 
     
@@ -127,37 +199,132 @@ const addRole = async() => {
             type: 'list',
             name: 'depts',
             message: 'choose the department',
-            choices: theDepos[0]
+            choices: depoNames
             
         }
     ]
 
-    inquirer.prompt(questions)
+    inquirer.prompt(questions).then(async (answers) =>{
+      let depoIndex = depoNames.indexOf(answers.depts)
+      await db.promise().query(
+        `INSERT INTO roles (title, salary, department_id)
+        VALUES (?,?,?)`,
+      [answers.title, parseInt(answers.salary), depoVar[depoIndex].id]
+    )
+      promptUser()
+    })
 }
 
-  function viewAllRoles() {
-    const employeeRoles = [
-      {
-        name: 'foo',
-        age: 10,
-      },
-      {
-        name: 'bar',
-        age: 20,
-      },
-    ]
-  
-    setTimeout(() => {
-      console.log('view all roles')
-  
-      console.log('the users roles displayed in a fancy table here, but I dont know how to do that yet')
-      console.log('-------------------------------------------------------')
-      console.log('Imagine this is the roles table below...:nerd_face:')
-      console.table(employeeRoles)
-      console.log('-------------------------------------------------------')
-  
-      promptUser()
-    }, 3000)
+const addEmployee = async () => {
+  const theRoles = await db.promise().query(
+  `SELECT * FROM roles`)
+  const rolesVar = theRoles[0]
+  const roleNames = []
+
+  for (let i = 0; i < rolesVar.length; i++){
+      roleNames.push(rolesVar[i].title)
   }
+
+  const theEmployeesVar = await db.promise().query(
+    `SELECT * FROM employees`)
+  const theEmployees = theEmployeesVar[0]
+  const employeeNames = []
+
+  for (let i = 0; i < theEmployees.length; i++){
+    employeeNames.push(theEmployees[i].first_name + " " + theEmployees[i].last_name)
+  }
+
+  employeeNames.push('None')
+
+  const questions = [
+    {
+      type: 'input',
+      name: 'firstName',
+      message: 'What is their first name?'
+    },
+    {
+      type: 'input',
+      name: 'lastName',
+      message: 'What is their last name?'
+    },
+    {
+      type: 'list',
+      name: 'roles',
+      message: 'choose thier role',
+      choices: roleNames
+    },
+    {
+      type: 'list',
+      name: 'Manager',
+      message: 'Who is their Manager?',
+      choices: employeeNames
+    }
+  ]
+
+  inquirer.prompt(questions).then(async (answers) =>{
+    let roleIndex = roleNames.indexOf(answers.roles)
+    let managerIndex = employeeNames.indexOf(answers.Manager)
+    let managerId
+    if (theEmployees[managerIndex] != null){
+      managerId = theEmployees[managerIndex].id
+    }
+    else{
+      managerId = null
+    }
+    await db.promise().query(
+      `INSERT INTO employees (first_name, last_name, role_id, manager_id)
+      VALUES (?,?,?,?)`,
+    [answers.firstName, answers.lastName, rolesVar[roleIndex].id, managerId]
+  )
+    promptUser()
+  })
+}
+
+const updateEmployeeRole = async () => {
+  const theEmployeesVar = await db.promise().query(
+  `SELECT * FROM employees`)
+  const employees = theEmployeesVar[0]
+  const employeeNames = []
+  for (let i = 0; i < employees.length; i++){
+    employeeNames.push(employees[i].first_name + ' ' + employees[i].last_name)
+  }
+
+  const roles =  await db.promise().query(
+    `SELECT * FROM roles`
+  )
+  const theRoles = roles[0]
+  const RollNames = []
+
+
+  for (let i = 0; i < theRoles.length; i++){
+    RollNames.push(theRoles[i].title)
+  }
+
+  const questions = [
+    {
+      type: 'list',
+      name: 'employee',
+      message: 'choose an Employee',
+      choices: employeeNames
+    },
+    {
+      type: 'list',
+      name: 'newRole',
+      message: 'Which Role Applies to this Employee?',
+      choices: RollNames
+    }
+  ]
+
+  inquirer.prompt(questions).then(async (answers) => {
+    const employeeIndex = employeeNames.indexOf(answers.employee)
+    const roleIndex = RollNames.indexOf(answers.newRole)
+
+
+    db.query('UPDATE ?? SET role_id=? WHERE id=?',
+      ['employees', theRoles[roleIndex].id, employees[employeeIndex].id]
+    )
+    promptUser()
+  })
+}
   
-  promptUser()
+promptUser()

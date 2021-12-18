@@ -10,7 +10,7 @@ CREATE TABLE departments (
 );
 
 CREATE TABLE roles (
-    id INT UNIQUE NOT NULL AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     title VARCHAR(30) NOT NULL UNIQUE,
     salary FLOAT NOT NULL,
     department_id INT,
@@ -20,7 +20,7 @@ CREATE TABLE roles (
 );
 
 CREATE TABLE employees (
-    id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    id INT NOT NULL AUTO_INCREMENT,
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
     role_id INT,
