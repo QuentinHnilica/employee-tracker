@@ -129,14 +129,15 @@ const viewEmployees = async (bool) => {
     newObj.firstName = theEmployees[i].first_name
     newObj.lastName = theEmployees[i].last_name
     for (let q = 0; q < theRoles.length; q++){
-      if (theEmployees[i].role_id == theRoles[q].id)
-      newObj.title = theRoles[q].title
-      for (let z = 0; z < mydpos.length; z++){
-        if (mydpos[z].id == theRoles[q].department_id){
-          newObj.department = mydpos[z].depoName
+      if (theEmployees[i].role_id == theRoles[q].id){
+        newObj.title = theRoles[q].title
+        for (let z = 0; z < mydpos.length; z++){
+          if (mydpos[z].id == theRoles[q].department_id){
+            newObj.department = mydpos[z].depoName
+          }
         }
+        newObj.salary = theRoles[q].salary
       }
-      newObj.salary = theRoles[q].salary
     }
     if (theEmployees[i].manager_id != null){
       for (let a = 0; a < theEmployees.length; a++){
