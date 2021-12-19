@@ -24,11 +24,14 @@
   2. Run npm start
   3. start adding roles, departments and employee info then view each.
 
+  ![image](employee-tracker.png)
+
   ## Tech
   - JavaScript
   - NodeJS
+  - mysql
 
-  ## 
+  ## Video
   
 
   
