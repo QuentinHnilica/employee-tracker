@@ -32,7 +32,7 @@
   - mysql
 
   ## Video
-  
+  https://watch.screencastify.com/v/pz8qx3fNjrhoXrLFL2tj
 
   
 
